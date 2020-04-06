@@ -320,3 +320,7 @@ func  isTargetDb ( target string) (bool) {
 	    return isDbClient
 }
 
+//Stop grpc.Server
+func (srv *Server) Stop() {
+        srv.s.Stop()
+}

@@ -1,0 +1,56 @@
+{
+"ipv6Unicast":{
+  "routerId":"10.0.0.2",
+  "as":100,
+  "vrfId":0,
+  "vrfName":"Default",
+  "tableVersion":9,
+  "ribCount":16,
+  "ribMemory":2432,
+  "peerCount":4,
+  "peerMemory":78976,
+  "peers":{
+    "2000:2:1::2":{
+      "hostname":"lnos-x1-a-asw03.lab.linkedin.com",
+      "description":"lnos-x1-a-asw03.lab",
+      "advertisedPrefixes":9,
+      "remoteAs":100,
+      "version":4,
+      "msgRcvd":1359,
+      "msgSent":1361,
+      "tableVersion":0,
+      "outq":0,
+      "inq":0,
+      "peerUptime":"01:07:47",
+      "peerUptimeMsec":4067000,
+      "peerUptimeEstablishedEpoch":1587759646,
+      "prefixReceivedCount":3,
+      "state":"Established",
+      "idType":"ipv6"
+    },
+    "2000:2:2::2":{
+      "hostname":"lnos-x1-a-asw04.lab.linkedin.com",
+      "description":"lnos-x1-a-asw04.lab",
+      "advertisedPrefixes":9,
+      "remoteAs":100,
+      "version":4,
+      "msgRcvd":1358,
+      "msgSent":1361,
+      "tableVersion":0,
+      "outq":0,
+      "inq":0,
+      "peerUptime":"01:07:47",
+      "peerUptimeMsec":4067000,
+      "peerUptimeEstablishedEpoch":1587759646,
+      "prefixReceivedCount":4,
+      "state":"Established",
+      "idType":"ipv6"
+    }
+  },
+  "totalPeers":2,
+  "dynamicPeers":0,
+  "bestPath":{
+    "multiPathRelax":"true"
+  }
+}
+}
