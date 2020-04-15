@@ -65,6 +65,9 @@ sonic-telemetry: go.mod mgmt-deps
 	$(GO) install github.com/jipanyang/gnxi/gnmi_get
 	$(GO) install github.com/jipanyang/gnxi/gnmi_set
 	$(GO) install -mod=vendor github.com/openconfig/gnmi/cmd/gnmi_cli
+	rm -f -r node_exporter-0.18.1*
+	wget https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+	tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz
 
 check:
 	sudo mkdir -p ${DBDIR}
@@ -93,6 +96,7 @@ install:
 	$(INSTALL) -D $(BUILD_DIR)/gnmi_get $(DESTDIR)/usr/sbin/gnmi_get
 	$(INSTALL) -D $(BUILD_DIR)/gnmi_set $(DESTDIR)/usr/sbin/gnmi_set
 	$(INSTALL) -D $(BUILD_DIR)/gnmi_cli $(DESTDIR)/usr/sbin/gnmi_cli
+	$(INSTALL) -D node_exporter-0.18.1.linux-amd64/node_exporter $(DESTDIR)/usr/sbin/node_exporter
 
 	mkdir -p $(DESTDIR)/usr/bin/
 	cp -r $(GO_MGMT_PATH)/src/cvl/schema $(DESTDIR)/usr/sbin
@@ -104,5 +108,5 @@ deinstall:
 	rm $(DESTDIR)/usr/sbin/dialout_client_cli
 	rm $(DESTDIR)/usr/sbin/gnmi_get
 	rm $(DESTDIR)/usr/sbin/gnmi_set
-
+	rm $(DESTDIR)/usr/sbin/node_exporter
 
