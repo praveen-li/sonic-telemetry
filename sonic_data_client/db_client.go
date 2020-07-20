@@ -816,6 +816,7 @@ type redisSubData struct {
 
 // TODO: For delete operation, the exact content returned is to be clarified.
 func dbSingleTableKeySubscribe(rsd redisSubData, c *DbClient, msiOut *map[string]interface{}) {
+	var tableKey   string
 	tblPath := rsd.tblPath
 	pubsub := rsd.pubsub
 	prefixLen := rsd.prefixLen
@@ -872,6 +873,7 @@ func dbSingleTableKeySubscribe(rsd redisSubData, c *DbClient, msiOut *map[string
 						enqueFatalMsg(c, err.Error())
 						return
 					}
+                                        tableKey = tblPath.tableKey
 				}
 				if reflect.DeepEqual(newMsi, msi) {
 					// No change from previous data
@@ -883,9 +885,15 @@ func dbSingleTableKeySubscribe(rsd redisSubData, c *DbClient, msiOut *map[string
 				continue
 			}
 			c.mu.Lock()
-			for k, v := range newMsi {
+                        if tblPath.tableKey != "" || subscr.Payload != "hset" {
+			    for k, v := range newMsi {
 				(*msiOut)[k] = v
-			}
+			    }
+                        } else {
+                            // For table subscription
+                            (*msiOut)[tableKey] = newMsi
+                        }
+
 			c.mu.Unlock()
 
 		case <-c.channel:
