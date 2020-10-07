@@ -26,6 +26,7 @@
       "peerUptimeEstablishedEpoch":1587759646,
       "prefixReceivedCount":3,
       "state":"Established",
+      "connectionsEstablished":3,
       "idType":"ipv6"
     },
     "2000:2:2::2":{
@@ -44,6 +45,7 @@
       "peerUptimeEstablishedEpoch":1587759646,
       "prefixReceivedCount":4,
       "state":"Established",
+      "connectionsEstablished":4,
       "idType":"ipv6"
     }
   },

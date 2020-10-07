@@ -6,6 +6,6 @@
         "BgpPeerInTotalMessages": "1363",
         "BgpPeerLocalAddr": "10.2.2.1",
         "BgpPrefixInPrefixesAccepted": "3",
-        "BgpPrefixOutPrefixes": "8"
+        "BgpPrefixOutPrefixes": "8",
+        "BgpPeerEstablishedTransitions": "2"
 }
-

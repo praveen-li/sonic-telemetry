@@ -26,6 +26,7 @@
       "peerUptimeEstablishedEpoch":1587763696,
       "prefixReceivedCount":3,
       "state":"Established",
+      "connectionsEstablished":1,
       "idType":"ipv4"
     },
     "10.2.2.1":{
@@ -44,6 +45,7 @@
       "peerUptimeEstablishedEpoch":1587759646,
       "prefixReceivedCount":3,
       "state":"Established",
+      "connectionsEstablished":2,
       "idType":"ipv4"
     }
   },

@@ -84,6 +84,7 @@ type BgpMetrics struct {
     BgpPeerInTotalMessages        int
     BgpPrefixInPrefixesAccepted   int
     BgpPrefixOutPrefixes          int
+    BgpPeerEstablishedTransitions int
 }
 
 // Response messages for show bgp summary
@@ -118,6 +119,7 @@ type Peers struct {
    IdType                      string     `json:"idType"`
    PeerDescription             *string    `json:"description,omitempty"`
    PrefixOutCount              *int       `json:"advertisedPrefixes,omitempty"`
+   EstablishedTransitions      int        `json:"connectionsEstablished,omitempty"`
 }
 
 // BgpUnicast structure defines the unicast fields from vty response
@@ -181,6 +183,7 @@ func (m BGPSummaryMessage) unicastPeers(peers []byte, poller *BgpPoller) error {
         value.BgpPeerLocalAddr = k
         value.BgpPeerState = v.State
         value.BgpPeerAdminStatus = adminUp
+        value.BgpPeerEstablishedTransitions = v.EstablishedTransitions
 
         if (v.State == "Idle (Admin)") {
             value.BgpPeerAdminStatus = adminDown
