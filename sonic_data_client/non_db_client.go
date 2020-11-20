@@ -63,6 +63,18 @@ var (
 			path:    []string{"OTHERS", "proc", "stat"},
 			getFunc: dataGetFunc(getProcStat),
 		},
+		{ // get telemetry daemon runtime memory info
+                        path:    []string{"OTHERS", "selfhealth", "memstat"},
+                        getFunc: dataGetFunc(getRuntimeMemStat),
+                },
+                { // get telemetry daemon process info
+                        path:    []string{"OTHERS", "selfhealth", "processinfo"},
+                        getFunc: dataGetFunc(getRuntimeProcessInfo),
+                },
+                { // get telemetry daemon keepalive
+                        path:    []string{"OTHERS", "selfhealth", "keepalive"},
+                        getFunc: dataGetFunc(getKeepAlive),
+                },
 	}
 )
 
