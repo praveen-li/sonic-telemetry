@@ -63,11 +63,15 @@ var (
 			path:    []string{"OTHERS", "proc", "stat"},
 			getFunc: dataGetFunc(getProcStat),
 		},
-		{ // get telemetry daemon runtime memory info
+		{ // get telemetry docker runtime Go info
+                        path:    []string{"OTHERS", "selfhealth", "goinfo"},
+                        getFunc: dataGetFunc(getRuntimeGoInfo),
+                },
+		{ // get telemetry docker runtime memory info
                         path:    []string{"OTHERS", "selfhealth", "memstat"},
                         getFunc: dataGetFunc(getRuntimeMemStat),
                 },
-                { // get telemetry daemon process info
+                { // get telemetry docker process info
                         path:    []string{"OTHERS", "selfhealth", "processinfo"},
                         getFunc: dataGetFunc(getRuntimeProcessInfo),
                 },
