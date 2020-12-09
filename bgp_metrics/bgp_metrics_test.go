@@ -11,6 +11,10 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/golang/protobuf/proto"
 
+	svr "github.com/Azure/sonic-telemetry/gnmi_server"
+	spb "github.com/Azure/sonic-telemetry/proto"
+	sdc "github.com/Azure/sonic-telemetry/sonic_data_client"
+	gclient "github.com/jipanyang/gnmi/client/gnmi"
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/gnmi/value"
 	"golang.org/x/net/context"
@@ -22,12 +26,9 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
-	spb "github.com/Azure/sonic-telemetry/proto"
-	sdc "github.com/Azure/sonic-telemetry/sonic_data_client"
-	gclient "github.com/jipanyang/gnmi/client/gnmi"
-        svr "github.com/Azure/sonic-telemetry/gnmi_server"
 )
 
 var clientTypes = []string{gclient.Type}
@@ -156,13 +157,13 @@ func prepareDb(t *testing.T, fileName string) {
 		t.Fatalf("read file %v err: %v bytes: %s", fileName, err, string(bytes))
 	}
 
-        poller := &BgpPoller{}
-        poller.BgpData = make(map[string]BgpMetrics)
-        poller.RedisDbConn.redisClient = rclient
+	poller := &BgpPoller{}
+	poller.BgpData = make(map[string]BgpMetrics)
+	poller.RedisDbConn.redisClient = rclient
 
-        m := BGPSummaryMessage{}
-        m.unmarshalMessage(bytes, poller, "")
-        poller.Write_redisDb()
+	m := BGPSummaryMessage{}
+	m.unmarshalMessage(bytes, poller, "")
+	poller.Write_redisDb()
 }
 
 // Test BGP metrics in Redis DB
@@ -170,7 +171,7 @@ func TestBGPMetricsSum(t *testing.T) {
 	s := createServer(t)
 	go runServer(t, s)
 
-        fileName := "../testdata/BGP_summary.txt"
+	fileName := "../testdata/BGP_summary.txt"
 	prepareDb(t, fileName)
 
 	tlsConfig := &tls.Config{InsecureSkipVerify: true}
@@ -193,23 +194,23 @@ func TestBGPMetricsSum(t *testing.T) {
 		t.Fatalf("read file %v err: %v", fileName, err)
 	}
 
-        fileName = "../testdata/BGPMetrics_ipv4_peer2.txt"
-        BGPIpv4Peer2Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv4_peer2.txt"
+	BGPIpv4Peer2Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
-        fileName = "../testdata/BGPMetrics_ipv6_peer1.txt"
-        BGPIpv6Peer1Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv6_peer1.txt"
+	BGPIpv6Peer1Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
-        fileName = "../testdata/BGPMetrics_ipv6_peer2.txt"
-        BGPIpv6Peer2Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv6_peer2.txt"
+	BGPIpv6Peer2Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
 	tds := []struct {
 		desc        string
@@ -227,33 +228,33 @@ func TestBGPMetricsSum(t *testing.T) {
 		wantRetCode: codes.OK,
 		wantRespVal: BGPIpv4Peer1Bytes,
 	}, {
-                desc:       "get BGP_TABLE:10.2.2.1",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+		desc:       "get BGP_TABLE:10.2.2.1",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "10.2.2.1" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv4Peer2Bytes,
-        }, {
-                desc:       "get BGP_TABLE:2000:2:1::2",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv4Peer2Bytes,
+	}, {
+		desc:       "get BGP_TABLE:2000:2:1::2",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "2000:2:1::2" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv6Peer1Bytes,
-        }, {
-                desc:       "get BGP_TABLE:2000:2:2::2",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv6Peer1Bytes,
+	}, {
+		desc:       "get BGP_TABLE:2000:2:2::2",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "2000:2:2::2" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv6Peer2Bytes,
-        }}
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv6Peer2Bytes,
+	}}
 
 	for _, td := range tds {
 		t.Run(td.desc, func(t *testing.T) {
@@ -261,143 +262,199 @@ func TestBGPMetricsSum(t *testing.T) {
 		})
 	}
 
-        s.Stop()
+	s.Stop()
 }
 
 func TestBGPMetricsSumIpv4(t *testing.T) {
-        s := createServer(t)
-        go runServer(t, s)
+	s := createServer(t)
+	go runServer(t, s)
 
-        fileName := "../testdata/BGP_summary_ipv4.txt"
-        prepareDb(t, fileName)
+	fileName := "../testdata/BGP_summary_ipv4.txt"
+	prepareDb(t, fileName)
 
-        tlsConfig := &tls.Config{InsecureSkipVerify: true}
-        opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))}
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))}
 
-        targetAddr := "127.0.0.1:8081"
-        conn, err := grpc.Dial(targetAddr, opts...)
-        if err != nil {
-                t.Fatalf("Dialing to %q failed: %v", targetAddr, err)
-        }
-        defer conn.Close()
+	targetAddr := "127.0.0.1:8081"
+	conn, err := grpc.Dial(targetAddr, opts...)
+	if err != nil {
+		t.Fatalf("Dialing to %q failed: %v", targetAddr, err)
+	}
+	defer conn.Close()
 
-        gClient := pb.NewGNMIClient(conn)
-        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-        defer cancel()
+	gClient := pb.NewGNMIClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-        fileName = "../testdata/BGPMetrics_ipv4_peer1.txt"
-        BGPIpv4Peer1Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv4_peer1.txt"
+	BGPIpv4Peer1Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
-        fileName = "../testdata/BGPMetrics_ipv4_peer2.txt"
-        BGPIpv4Peer2Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv4_peer2.txt"
+	BGPIpv4Peer2Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
-        tds := []struct {
-                desc        string
-                pathTarget  string
-                textPbPath  string
-                wantRetCode codes.Code
-                wantRespVal interface{}
-        }{{
-                desc:       "get BGP_TABLE:10.2.1.1",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+	tds := []struct {
+		desc        string
+		pathTarget  string
+		textPbPath  string
+		wantRetCode codes.Code
+		wantRespVal interface{}
+	}{{
+		desc:       "get BGP_TABLE:10.2.1.1",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "10.2.1.1" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv4Peer1Bytes,
-        }, {
-                desc:       "get BGP_TABLE:10.2.2.1",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv4Peer1Bytes,
+	}, {
+		desc:       "get BGP_TABLE:10.2.2.1",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "10.2.2.1" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv4Peer2Bytes,
-        }}
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv4Peer2Bytes,
+	}}
 
-        for _, td := range tds {
-                t.Run(td.desc, func(t *testing.T) {
-                        runTestGet(t, ctx, gClient, td.pathTarget, td.textPbPath, td.wantRetCode, td.wantRespVal)
-                })
-        }
+	for _, td := range tds {
+		t.Run(td.desc, func(t *testing.T) {
+			runTestGet(t, ctx, gClient, td.pathTarget, td.textPbPath, td.wantRetCode, td.wantRespVal)
+		})
+	}
 
-        s.Stop()
+	s.Stop()
 }
 
 func TestBGPMetricsSumIpv6(t *testing.T) {
-        s := createServer(t)
-        go runServer(t, s)
+	s := createServer(t)
+	go runServer(t, s)
 
-        fileName := "../testdata/BGP_summary_ipv6.txt"
-        prepareDb(t, fileName)
+	fileName := "../testdata/BGP_summary_ipv6.txt"
+	prepareDb(t, fileName)
 
-        tlsConfig := &tls.Config{InsecureSkipVerify: true}
-        opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))}
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))}
 
-        targetAddr := "127.0.0.1:8081"
-        conn, err := grpc.Dial(targetAddr, opts...)
-        if err != nil {
-                t.Fatalf("Dialing to %q failed: %v", targetAddr, err)
-        }
-        defer conn.Close()
+	targetAddr := "127.0.0.1:8081"
+	conn, err := grpc.Dial(targetAddr, opts...)
+	if err != nil {
+		t.Fatalf("Dialing to %q failed: %v", targetAddr, err)
+	}
+	defer conn.Close()
 
-        gClient := pb.NewGNMIClient(conn)
-        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-        defer cancel()
+	gClient := pb.NewGNMIClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-        fileName = "../testdata/BGPMetrics_ipv6_peer1.txt"
-        BGPIpv6Peer1Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv6_peer1.txt"
+	BGPIpv6Peer1Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
-        fileName = "../testdata/BGPMetrics_ipv6_peer2.txt"
-        BGPIpv6Peer2Bytes, err := ioutil.ReadFile(fileName)
-        if err != nil {
-                t.Fatalf("read file %v err: %v", fileName, err)
-        }
+	fileName = "../testdata/BGPMetrics_ipv6_peer2.txt"
+	BGPIpv6Peer2Bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Fatalf("read file %v err: %v", fileName, err)
+	}
 
-        tds := []struct {
-                desc        string
-                pathTarget  string
-                textPbPath  string
-                wantRetCode codes.Code
-                wantRespVal interface{}
-        }{{
-                desc:       "get BGP_TABLE:2000:2:1::2",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+	tds := []struct {
+		desc        string
+		pathTarget  string
+		textPbPath  string
+		wantRetCode codes.Code
+		wantRespVal interface{}
+	}{{
+		desc:       "get BGP_TABLE:2000:2:1::2",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "2000:2:1::2" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv6Peer1Bytes,
-        }, {
-                desc:       "get BGP_TABLE:2000:2:2::2",
-                pathTarget: "STATE_DB",
-                textPbPath: `
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv6Peer1Bytes,
+	}, {
+		desc:       "get BGP_TABLE:2000:2:2::2",
+		pathTarget: "STATE_DB",
+		textPbPath: `
                                         elem: <name: "BGP_TABLE" >
                                         elem: <name: "2000:2:2::2" >
                                 `,
-                wantRetCode: codes.OK,
-                wantRespVal: BGPIpv6Peer2Bytes,
-        }}
+		wantRetCode: codes.OK,
+		wantRespVal: BGPIpv6Peer2Bytes,
+	}}
 
-        for _, td := range tds {
-                t.Run(td.desc, func(t *testing.T) {
-                        runTestGet(t, ctx, gClient, td.pathTarget, td.textPbPath, td.wantRetCode, td.wantRespVal)
-                })
-        }
+	for _, td := range tds {
+		t.Run(td.desc, func(t *testing.T) {
+			runTestGet(t, ctx, gClient, td.pathTarget, td.textPbPath, td.wantRetCode, td.wantRespVal)
+		})
+	}
 
-        s.Stop()
+	s.Stop()
+}
+
+//TestBGPSum128Ipv4Peers test polling metrics with 128 BGP ipv4 peers
+func TestBGPSum128Ipv4Peers(t *testing.T) {
+	s := createServer(t)
+	go runServer(t, s)
+
+	// file with mock data - "show bgp ipv4 summary json" response
+	fileName := "../testdata/bgp_summary_128_ipv4.txt"
+
+	// bgp_metrics daemon reads and parses the test data and writes to Redis DB
+	prepareDb(t, fileName)
+
+	// check if all peers are written to STATE_DB BGP_TABLE
+	redisDb := getRedisClient(t)
+	for i := 1; i <= 128; i++ {
+		bgp_table := "BGP_TABLE|10.0.1." + strconv.Itoa(i)
+		bgp_key := "BgpPeerInTotalMessages"
+
+		// test all peers are written to REDIS DB
+		val, errval := redisDb.HGet(bgp_table, bgp_key).Result()
+
+		if errval != nil {
+			t.Fatalf("Redis get field failed for %v, field = %v, errval: %v, val: %v", bgp_table, bgp_key, errval, val)
+		}
+	}
+
+	s.Stop()
+}
+
+//TestBGPSum128Ipv6Peers test polling metrics with 128 BGP ipv6 peers
+func TestBGPSum128Ipv6Peers(t *testing.T) {
+	s := createServer(t)
+	go runServer(t, s)
+
+	// file with mock data - "show bgp ipv6 summary json" response
+	fileName := "../testdata/bgp_summary_128_ipv6.txt"
+
+	// bgp_metrics daemon reads and parses the test data and writes to Redis DB
+	prepareDb(t, fileName)
+
+	// check if all peers are written to STATE_DB BGP_TABLE
+	redisDb := getRedisClient(t)
+	for i := 1; i <= 128; i++ {
+		bgp_table := "BGP_TABLE|2000:2:1::" + strconv.Itoa(i)
+		bgp_key := "BgpPeerInTotalMessages"
+
+		// test all peers are written to REDIS DB
+		val, errval := redisDb.HGet(bgp_table, bgp_key).Result()
+
+		if errval != nil {
+			t.Fatalf("Redis get field failed for %v, field = %v, errval: %v, val: %v", bgp_table, bgp_key, errval, val)
+		}
+	}
+
+	s.Stop()
 }
 
 func init() {
