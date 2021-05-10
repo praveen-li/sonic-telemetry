@@ -53,10 +53,14 @@ go-deps-clean:
 sonic-telemetry: $(GO_DEPS)
 	$(GO) install -mod=vendor $(BLD_FLAGS) github.com/Azure/sonic-telemetry/telemetry
 	$(GO) install -mod=vendor $(BLD_FLAGS) github.com/Azure/sonic-telemetry/dialout/dialout_client_cli
+	$(GO) install -mod=vendor github.com/Azure/sonic-telemetry/bgp_metrics
 	$(GO) install -mod=vendor github.com/jipanyang/gnxi/gnmi_get
 	$(GO) install -mod=vendor github.com/jipanyang/gnxi/gnmi_set
 	$(GO) install -mod=vendor github.com/openconfig/gnmi/cmd/gnmi_cli
 	$(GO) install -mod=vendor github.com/Azure/sonic-telemetry/gnoi_client
+	rm -f -r node_exporter-0.18.1*
+	wget https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+	tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz
 
 check:
 	sudo mkdir -p ${DBDIR}
@@ -65,6 +69,7 @@ check:
 	sudo find $(MGMT_COMMON_DIR)/models -name '*.yang' -exec cp {} /usr/models/yang/ \;
 	-$(GO) test -mod=vendor $(BLD_FLAGS) -v github.com/Azure/sonic-telemetry/gnmi_server
 	-$(GO) test -mod=vendor $(BLD_FLAGS) -v github.com/Azure/sonic-telemetry/dialout/dialout_client
+	-$(GO) test -mod=vendor -v github.com/Azure/sonic-telemetry/bgp_metrics
 
 clean:
 	$(RM) -r build
@@ -82,6 +87,8 @@ install:
 	$(INSTALL) -D $(BUILD_DIR)/gnmi_set $(DESTDIR)/usr/sbin/gnmi_set
 	$(INSTALL) -D $(BUILD_DIR)/gnmi_cli $(DESTDIR)/usr/sbin/gnmi_cli
 	$(INSTALL) -D $(BUILD_DIR)/gnoi_client $(DESTDIR)/usr/sbin/gnoi_client
+	$(INSTALL) -D node_exporter-0.18.1.linux-amd64/node_exporter $(DESTDIR)/usr/sbin/node_exporter
+	$(INSTALL) -D $(BUILD_DIR)/bgp_metrics $(DESTDIR)/usr/sbin/bgp_metrics
 
 
 deinstall:
@@ -90,5 +97,5 @@ deinstall:
 	rm $(DESTDIR)/usr/sbin/gnmi_get
 	rm $(DESTDIR)/usr/sbin/gnmi_set
 	rm $(DESTDIR)/usr/sbin/gnoi_client
-
-
+	rm $(DESTDIR)/usr/sbin/node_exporter
+	rm $(DESTDIR)/usr/sbin/bgp_metrics

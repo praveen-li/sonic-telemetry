@@ -1,0 +1,12 @@
+{
+        "BgpPeerAdminStatus": "2",
+        "BgpPeerState": "Established",
+        "BgpPeerDescription": "lnos-x1-a-asw04.lab",
+        "BgpPeerEstablishedTime": "1587759646",
+        "BgpPeerInTotalMessages": "1361",
+        "BgpPeerLocalAddr": "2000:2:2::2",
+        "BgpPrefixInPrefixesAccepted": "4",
+        "BgpPrefixOutPrefixes": "9",
+        "BgpPeerEstablishedTransitions": "4"
+}
+

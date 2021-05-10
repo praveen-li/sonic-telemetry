@@ -101,6 +101,22 @@ var (
 			path:    []string{"OTHERS", "osversion", "build"},
 			getFunc: dataGetFunc(getBuildVersion),
 		},
+		{ // get telemetry docker runtime Go info
+                        path:    []string{"OTHERS", "selfhealth", "goinfo"},
+                        getFunc: dataGetFunc(getRuntimeGoInfo),
+                },
+		{ // get telemetry docker runtime memory info
+                        path:    []string{"OTHERS", "selfhealth", "memstat"},
+                        getFunc: dataGetFunc(getRuntimeMemStat),
+                },
+                { // get telemetry docker process info
+                        path:    []string{"OTHERS", "selfhealth", "processinfo"},
+                        getFunc: dataGetFunc(getRuntimeProcessInfo),
+                },
+                { // get telemetry daemon keepalive
+                        path:    []string{"OTHERS", "selfhealth", "keepalive"},
+                        getFunc: dataGetFunc(getKeepAlive),
+                },
 	}
 )
 
